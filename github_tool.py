@@ -41,6 +41,7 @@ import sys
 import json
 import base64
 import argparse
+import subprocess
 import urllib.request
 import urllib.error
 
@@ -231,6 +232,64 @@ def cmd_issues(args, token):
         print("  #%-3d %-6s %s" % (i.get("number", 0), i.get("state", ""), i.get("title", "")))
 
 
+def cmd_pushdir(args, token):
+    """把当前 git 仓库已追踪的文件，作为一次 commit 推到远程分支。"""
+    owner, repo = owner_repo(args)
+    branch = args.branch
+
+    # 取回远程分支当前状态（不存在则视为全新分支）
+    try:
+        ref = api("GET", "/repos/%s/%s/git/ref/heads/%s" % (owner, repo, branch), token=token)
+        parent_sha = ref["object"]["sha"]
+        base_commit = api("GET", "/repos/%s/%s/git/commits/%s" % (owner, repo, parent_sha), token=token)
+        base_tree_sha = base_commit["tree"]["sha"]
+    except RuntimeError as e:
+        if "HTTP 404" not in str(e):
+            raise
+        parent_sha = None
+        base_tree_sha = None
+
+    # 读取本地已追踪文件，逐个创建 blob
+    tracked = subprocess.check_output(
+        ["git", "ls-files"], text=True, encoding="utf-8"
+    ).splitlines()
+    files = []
+    for path in tracked:
+        if not os.path.isfile(path):
+            continue
+        with open(path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode("ascii")
+        blob = api("POST", "/repos/%s/%s/git/blobs" % (owner, repo),
+                   data={"content": b64, "encoding": "base64"}, token=token)
+        files.append({"path": path, "mode": "100644", "type": "blob", "sha": blob["sha"]})
+        print("  已准备:", path)
+
+    # 在远程现有 tree 基础上叠加本地文件，创建 tree → commit → 更新分支引用
+    tree_payload = {"tree": files}
+    if base_tree_sha:
+        tree_payload["base_tree"] = base_tree_sha
+    tree = api("POST", "/repos/%s/%s/git/trees" % (owner, repo),
+               data=tree_payload, token=token)
+
+    commit_payload = {
+        "message": args.msg or "初始化：Git 速查表与 GitHub 工具脚本",
+        "tree": tree["sha"],
+    }
+    if parent_sha:
+        commit_payload["parents"] = [parent_sha]
+    commit = api("POST", "/repos/%s/%s/git/commits" % (owner, repo),
+                 data=commit_payload, token=token)
+
+    if parent_sha:
+        api("PATCH", "/repos/%s/%s/git/refs/heads/%s" % (owner, repo, branch),
+            data={"sha": commit["sha"], "force": False}, token=token)
+        print("推送完成: https://github.com/%s/%s/commit/%s" % (owner, repo, commit["sha"][:7]))
+    else:
+        api("POST", "/repos/%s/%s/git/refs" % (owner, repo),
+            data={"ref": "refs/heads/%s" % branch, "sha": commit["sha"]}, token=token)
+        print("新建分支并推送完成: https://github.com/%s/%s/tree/%s" % (owner, repo, branch))
+
+
 def build_parser():
     p = argparse.ArgumentParser(
         description="常用 GitHub 操作命令行工具",
@@ -278,6 +337,11 @@ def build_parser():
     isu = sub.add_parser("issues", help="列出 Issue")
     common(isu)
 
+    pd = sub.add_parser("pushdir", help="把当前仓库已追踪文件作为一次 commit 推到远程分支")
+    common(pd)
+    pd.add_argument("--branch", default="main", help="目标分支，默认 main")
+    pd.add_argument("--msg", default="", help="提交信息")
+
     return p
 
 
@@ -291,6 +355,7 @@ HANDLERS = {
     "commits": cmd_commits,
     "issue": cmd_issue,
     "issues": cmd_issues,
+    "pushdir": cmd_pushdir,
 }
 
 
