@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>常用 Git 命令速查表</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --ink: #1f2328;
+    --muted: #656d76;
+    --line: #d8dee4;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --green: #1a7f37;
+    --red: #cf222e;
+    --amber: #9a6700;
+    --code-bg: #f6f8fa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 20px 56px; }
+  header {
+    background: linear-gradient(135deg, #0969da, #8250df);
+    color: #fff;
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  header h1 { margin: 0 0 6px; font-size: 28px; letter-spacing: .5px; }
+  header p { margin: 0; opacity: .92; font-size: 14px; }
+  .note {
+    background: #fff8c5;
+    border: 1px solid #d4a72c;
+    border-left: 4px solid #bf8700;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 22px;
+    font-size: 14px;
+  }
+  .note b { color: #7d4e00; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px 20px;
+    box-shadow: 0 1px 2px rgba(31,35,40,.04);
+    break-inside: avoid;
+  }
+  .card.full { grid-column: 1 / -1; }
+  .card h2 {
+    margin: 0 0 12px;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  pre {
+    margin: 0;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-family: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.75;
+    color: #24292f;
+  }
+  code { font-family: "Cascadia Code", Consolas, monospace; }
+  .cmd { color: #0550ae; font-weight: 600; }
+  .cm { color: #6e7781; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+  .sym { font-family: Consolas, monospace; font-weight: 700; color: var(--accent); }
+  .warn { color: var(--red); font-weight: 600; }
+  .ok { color: var(--green); font-weight: 600; }
+  .step { display: flex; gap: 10px; align-items: baseline; margin-bottom: 10px; }
+  .step:last-child { margin-bottom: 0; }
+  .step .badge {
+    flex: 0 0 auto;
+    background: #dafbe1; color: var(--green);
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .step .body { flex: 1; }
+  .step .body > b { display: block; margin-bottom: 4px; }
+  .split { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; align-items: start; }
+  .split h3 { margin: 0 0 8px; font-size: 14px; color: var(--muted); }
+  .split pre { height: 100%; }
+  footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 28px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } .split { grid-template-columns: 1fr; } }
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .wrap { max-width: none; padding: 0; }
+    header { background: #0969da !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card, pre, .note { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>常用 Git 命令速查表</h1>
+  <p>面向日常开发的高频命令 · 配套账号 zhangkj123456 · 生成于 2026-11-21</p>
+</header>
+
+<div class="note">
+  <b>三条保命规则：</b>① 动手前先 <code>git status</code> 看清状态；② <code>git reset --hard</code> 会丢弃未提交改动，慎用；③ 已经 <code>push</code> 的提交想撤销，用 <code>git revert</code> 而不是 <code>reset</code>。
+</div>
+
+<div class="grid">
+
+  <!-- 1 -->
+  <section class="card">
+    <h2><span class="num">1</span>初始配置（只做一次）</h2>
+<pre><span class="cmd">git config --global user.name</span> "zhangkj123456"
+<span class="cmd">git config --global user.email</span> "19297390@qq.com"
+<span class="cmd">git config --global --list</span>          <span class="cm"># 查看全局配置</span>
+<span class="cmd">git config --local user.name</span> "xxx"   <span class="cm"># 只对当前仓库生效</span></pre>
+  </section>
+
+  <!-- 2 -->
+  <section class="card">
+    <h2><span class="num">2</span>起步：建仓库 / 克隆</h2>
+<pre><span class="cmd">git init</span>                  <span class="cm"># 当前目录初始化为新仓库</span>
+<span class="cmd">git clone</span> &lt;url&gt;            <span class="cm"># 克隆远程仓库</span>
+<span class="cmd">git clone</span> &lt;url&gt; mydir      <span class="cm"># 克隆到指定目录</span>
+<span class="cmd">git clone</span> &lt;url&gt; .          <span class="cm"># 克隆到当前目录</span></pre>
+  </section>
+
+  <!-- 3 -->
+  <section class="card">
+    <h2><span class="num">3</span>日常三板斧（90% 的时间在用）</h2>
+<pre><span class="cmd">git status</span>                 <span class="cm"># 看改了什么、是否已暂存</span>
+<span class="cmd">git add</span> file.txt           <span class="cm"># 暂存指定文件</span>
+<span class="cmd">git add</span> .                  <span class="cm"># 暂存当前目录所有改动</span>
+<span class="cmd">git add</span> -u                 <span class="cm"># 只暂存已跟踪文件的修改/删除</span>
+<span class="cmd">git commit</span> -m "信息"       <span class="cm"># 提交（写清楚改了什么）</span>
+<span class="cmd">git commit</span> -am "信息"      <span class="cm"># 跳过 add（仅限已跟踪文件）</span>
+<span class="cmd">git pull</span>                  <span class="cm"># 拉取并合并远程最新代码</span>
+<span class="cmd">git push</span>                  <span class="cm"># 推送到远程</span></pre>
+  </section>
+
+  <!-- 4 -->
+  <section class="card">
+    <h2><span class="num">4</span>分支操作</h2>
+<pre><span class="cmd">git branch</span>                 <span class="cm"># 列出本地分支</span>
+<span class="cmd">git branch</span> -a              <span class="cm"># 列出所有分支（含远程）</span>
+<span class="cmd">git switch</span> dev            <span class="cm"># 切换分支（推荐用法）</span>
+<span class="cmd">git switch</span> -c dev         <span class="cm"># 新建并切换到 dev</span>
+<span class="cmd">git checkout</span> -b dev       <span class="cm"># 老写法，同上</span>
+<span class="cmd">git merge</span> dev             <span class="cm"># 把 dev 合并进当前分支</span>
+<span class="cmd">git rebase</span> dev            <span class="cm"># 变基，保持提交历史线性</span>
+<span class="cmd">git branch</span> -d dev         <span class="cm"># 删除已合并的分支</span>
+<span class="cmd">git branch</span> -D dev         <span class="cm"># 强制删除（未合并也能删）</span></pre>
+  </section>
+
+  <!-- 5 -->
+  <section class="card">
+    <h2><span class="num">5</span>远程仓库</h2>
+<pre><span class="cmd">git remote</span> -v              <span class="cm"># 查看远程仓库地址</span>
+<span class="cmd">git remote add</span> origin &lt;url&gt; <span class="cm"># 添加远程（名字一般叫 origin</span>
+<span class="cmd">git remote set-url</span> origin &lt;url&gt; <span class="cm"># 修改远程地址</span>
+<span class="cmd">git fetch</span> origin          <span class="cm"># 只拉取更新，不合并</span>
+<span class="cmd">git pull</span> origin main      <span class="cm"># 拉取并合并指定分支</span>
+<span class="cmd">git push</span> -u origin main   <span class="cm"># 首次推送，建立追踪关系</span>
+<span class="cmd">git push</span> --delete origin dev <span class="cm"># 删除远程分支</span></pre>
+  </section>
+
+  <!-- 6 -->
+  <section class="card">
+    <h2><span class="num">6</span>查看历史与差异</h2>
+<pre><span class="cmd">git log</span>                    <span class="cm"># 完整提交历史</span>
+<span class="cmd">git log</span> --oneline --graph --all <span class="cm"># 简洁图形化历史</span>
+<span class="cmd">git log</span> -5                 <span class="cm"># 最近 5 条提交</span>
+<span class="cmd">git diff</span>                   <span class="cm"># 工作区 vs 暂存区</span>
+<span class="cmd">git diff</span> --staged          <span class="cm"># 暂存区 vs 上次提交</span>
+<span class="cmd">git show</span> d1989b3           <span class="cm"># 查看某次提交的详情</span>
+<span class="cmd">git blame</span> file.txt        <span class="cm"># 逐行看是谁在何时改的</span></pre>
+  </section>
+
+  <!-- 7 -->
+  <section class="card">
+    <h2><span class="num">7</span>撤销与回退（救急）</h2>
+<pre><span class="cmd">git restore</span> file.txt       <span class="cm"># 丢弃工作区改动（还没 add）</span>
+<span class="cmd">git restore</span> --staged file.txt <span class="cm"># 取消暂存，保留改动</span>
+<span class="cmd">git reset</span> --soft HEAD~1    <span class="cm"># 撤销上次 commit，改动留在暂存区</span>
+<span class="warn">git reset</span> <span class="warn">--hard HEAD~1</span>    <span class="warn"># 危险！彻底丢弃改动</span>
+<span class="cmd">git revert</span> d1989b3         <span class="cm"># 新提交撤销旧提交，适合已 push</span>
+<span class="cmd">git reflog</span>                 <span class="cm"># 找回"丢失"的提交 / 查看所有操作</span>
+<span class="cmd">git commit</span> --amend -m "新信息" <span class="cm"># 改最近一次提交信息</span></pre>
+  </section>
+
+  <!-- 8 -->
+  <section class="card">
+    <h2><span class="num">8</span>暂存现场（临时切任务）</h2>
+<pre><span class="cmd">git stash</span>                  <span class="cm"># 把当前改动存起来</span>
+<span class="cmd">git stash</span> push -m "说明"    <span class="cm"># 带说明地暂存</span>
+<span class="cmd">git stash</span> list             <span class="cm"># 查看暂存列表</span>
+<span class="cmd">git stash</span> pop              <span class="cm"># 恢复最近一次暂存并删除记录</span>
+<span class="cmd">git stash</span> apply            <span class="cm"># 恢复但保留记录</span></pre>
+  </section>
+
+  <!-- 9 -->
+  <section class="card">
+    <h2><span class="num">9</span>标签（版本发布）</h2>
+<pre><span class="cmd">git tag</span>                     <span class="cm"># 列出标签</span>
+<span class="cmd">git tag</span> v1.0.0              <span class="cm"># 创建轻量标签</span>
+<span class="cmd">git tag</span> -a v1.0.0 -m "正式版" <span class="cm"># 创建附注标签</span>
+<span class="cmd">git push</span> origin v1.0.0      <span class="cm"># 推送单个标签</span>
+<span class="cmd">git push</span> --tags             <span class="cm"># 推送所有标签</span></pre>
+  </section>
+
+  <!-- 10 状态符号 -->
+  <section class="card">
+    <h2><span class="num">10</span>git status 常见状态符号</h2>
+    <table>
+      <tr><th>符号</th><th>含义</th><th>怎么处理</th></tr>
+      <tr><td class="sym">??</td><td>未跟踪的新文件</td><td><code>git add</code> 或写进 <code>.gitignore</code></td></tr>
+      <tr><td class="sym">M </td><td>已修改并暂存</td><td>可直接 <code>git commit</code></td></tr>
+      <tr><td class="sym"> M</td><td>已修改但未暂存</td><td>先 <code>git add</code></td></tr>
+      <tr><td class="sym">A </td><td>新增且已暂存</td><td>可直接提交</td></tr>
+      <tr><td class="sym">D </td><td>已删除（已暂存）</td><td>提交即同步删除</td></tr>
+      <tr><td class="sym">UU</td><td>合并冲突</td><td>改文件 → <code>git add</code> → <code>git commit</code></td></tr>
+    </table>
+  </section>
+
+  <!-- .gitignore 全宽 -->
+  <section class="card full">
+    <h2><span class="num">11</span>.gitignore 写法（忽略不该提交的文件）</h2>
+
+    <div class="split">
+      <div>
+        <h3>匹配语法</h3>
+        <table>
+          <tr><th>写法</th><th>含义</th></tr>
+          <tr><td><code># 注释</code></td><td>注释行，不生效</td></tr>
+          <tr><td><code>*.log</code></td><td>忽略所有 .log 结尾的文件</td></tr>
+          <tr><td><code>build/</code></td><td>忽略所有名为 build 的目录（含子目录）</td></tr>
+          <tr><td><code>/dist</code></td><td>只忽略仓库根目录下的 dist</td></tr>
+          <tr><td><code>temp/*</code></td><td>忽略 temp 目录下的所有文件</td></tr>
+          <tr><td><code>!temp/keep.txt</code></td><td>例外：不忽略这个文件</td></tr>
+          <tr><td><code>**/foo.txt</code></td><td>任意层级下的 foo.txt</td></tr>
+          <tr><td><code>config.json</code></td><td>任意层级下同名的文件都会被忽略</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>常用模板（按需复制）</h3>
+<pre><span class="cm"># Node.js</span>
+node_modules/
+dist/
+build/
+*.log
+.env
+.env.local
+
+<span class="cm"># Python</span>
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+<span class="cm"># 通用 / 编辑器</span>
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+*.bak</pre>
+      </div>
+    </div>
+
+    <p style="margin:14px 0 8px;font-size:13.5px;">
+      <b>四条关键规则：</b>
+      ① 一行一条规则，文件放在<b>仓库根目录</b>，对整个仓库生效；
+      ② <code>/</code> 结尾表示目录，开头表示从仓库根目录算起；
+      ③ <code>*</code> 匹配任意字符（不含 <code>/</code>），<code>**</code> 匹配任意层级；
+      ④ <code>!</code> 表示例外，但<b>父目录被忽略时子文件的 ! 不生效</b>（要先写 <code>!父目录/</code>）。
+    </p>
+
+<pre><span class="cmd">git status</span> --ignored          <span class="cm"># 查看哪些文件被忽略了</span>
+<span class="cmd">git check-ignore</span> -v file.log  <span class="cm"># 查某文件被哪条规则忽略</span>
+<span class="cmd">git rm</span> --cached file.log      <span class="cm"># 已跟踪的文件改忽略：移出暂存区，本地文件保留</span></pre>
+
+    <p style="margin:10px 0 0;font-size:13px;color:var(--muted);">
+      ⚠️ 注意：<code>.gitignore</code> 只对<b>还没被 Git 跟踪</b>的文件生效。如果文件之前已经 <code>git add</code> 过，光写进 .gitignore 没用，必须执行上面的 <code>git rm --cached</code> 再提交一次。
+    </p>
+  </section>
+
+  <!-- 场景流程 全宽 -->
+  <section class="card full">
+    <h2><span class="num">12</span>常见场景：照着顺序敲就行</h2>
+
+    <div class="step"><span class="badge">A</span><div class="body"><b>把本地项目第一次推到 GitHub</b>
+<pre>git init
+git add .
+git commit -m "first commit"
+git remote add origin https://github.com/zhangkj123456/YG.git
+git branch -M main
+git push -u origin main</pre></div></div>
+
+    <div class="step"><span class="badge">B</span><div class="body"><b>每天开工 / 收工</b>
+<pre>git pull                      <span class="cm"># 开工：先拉最新代码</span>
+<span class="cm">… 修改文件 …</span>
+git status
+git add .
+git commit -m "说明改了什么"
+git push                      <span class="cm"># 收工：推上去</span></pre></div></div>
+
+    <div class="step"><span class="badge">C</span><div class="body"><b>改错了，还没 commit</b>
+<pre>git restore file.txt          <span class="cm"># 回到上次提交的状态</span></pre></div></div>
+
+    <div class="step"><span class="badge">D</span><div class="body"><b>commit 信息写错了，还没 push</b>
+<pre>git commit --amend -m "正确的信息"</pre></div></div>
+
+    <div class="step"><span class="badge">E</span><div class="body"><b>已经 push 了，想撤销那次提交</b>
+<pre>git revert d1989b3            <span class="cm"># 生成一次反向提交，历史安全</span>
+git push</pre></div></div>
+
+    <div class="step"><span class="badge">F</span><div class="body"><b>合并时遇到冲突（UU）</b>
+<pre>git status                    <span class="cm"># 找到冲突文件</span>
+<span class="cm"># 打开冲突文件，删掉 &lt;&lt;&lt;&lt;&lt; ===== >>>>>> 标记，保留想要的内容</span>
+git add .
+git commit -m "解决合并冲突"
+git push</pre></div></div>
+  </section>
+
+  <!-- 本机提示 -->
+  <section class="card full">
+    <h2><span class="num">13</span>你这台机器的特别提示</h2>
+    <table>
+      <tr><th>项目</th><th>说明</th></tr>
+      <tr><td>Git 身份</td><td>已配置为 <code>zhangkj123456 / 19297390@qq.com</code>（全局），提交自动带上</td></tr>
+      <tr><td>练习仓库</td><td><code>https://github.com/zhangkj123456/YG</code>，已推送过 <code>hello.md</code></td></tr>
+      <tr><td>网络情况</td><td>当前代理下 <code>github.com</code> 的 git 连接曾报 502/超时，<code>api.github.com</code> 正常；若 clone/push 失败，可改走 GitHub API 或换网络重试</td></tr>
+      <tr><td>推送凭证</td><td>本地没有常驻凭证，推送需要 Personal Access Token；生成的 Token 有效期 90 天，注意只在 GitHub 上保留必要权限</td></tr>
+      <tr><td>隐私建议</td><td>不想让 QQ 邮箱出现在提交记录里，可在 GitHub → Settings → Emails 勾选 "Keep my email addresses private"，改用 <code>noreply</code> 邮箱</td></tr>
+    </table>
+  </section>
+
+</div>
+
+<footer>提示：本页可直接在浏览器打印（Ctrl+P）保存为 PDF，方便随时查阅。</footer>
+</div>
+</body>
+</html>
