@@ -1,0 +1,20 @@
+# 项目数据/记忆（非代码，不纳入版本管理）
+.workbuddy/
+
+# 凭证文件：含 GitHub Token，绝不提交
+.github_token
+.gh_token
+.git-cred-tmp
+
+# 临时/中间文件
+.gh_payload.json
+*.bmp
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 编辑器/系统
+.DS_Store
+Thumbs.db
+*.swp
